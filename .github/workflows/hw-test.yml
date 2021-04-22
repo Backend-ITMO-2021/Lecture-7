@@ -1,4 +1,4 @@
-name: HW CI
+name: HW-7 CI
 
 on:
   pull_request:
