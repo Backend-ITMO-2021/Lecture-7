@@ -4,7 +4,7 @@ object AlternativeExample {
   val optionAlternative = new Alternative[Option] {
     def empty[A]: Option[A] = None
     def orElse[A](fa: Option[A], recover: Option[A]): Option[A] =
-    fa match {
+      fa match {
         case _: Some[_] => fa
         case None => recover
       }

@@ -1,5 +1,5 @@
 import org.scalatest.funsuite.AnyFunSuite
-import ru.ifmo.backend_2021.{Nat, NonEmpty, Parser, Succ, Tree, Z, Parser}
+import ru.ifmo.backend_2021._
 
 class Tests extends AnyFunSuite {
   test("Natural numbers") {
@@ -124,11 +124,11 @@ class Tests extends AnyFunSuite {
     assert(brackets.runParser(correctBrackets).nonEmpty)
     assert(brackets.runParser(incorrectBrackets).isEmpty)
 
-    val integer ="12314"
+    val integer = "12314"
     assertResult(Some(12314, ""))(Parser.integer.runParser(integer))
-    val integer1 ="-1214"
+    val integer1 = "-1214"
     assertResult(Some(-1214, ""))(Parser.integer.runParser(integer1))
-    val integer2 ="+123114"
+    val integer2 = "+123114"
     assertResult(Some(123114, ""))(Parser.integer.runParser(integer2))
     val incorrectInts = List("a123", "+-12", "--123", "123a", "12a33", "9999_1")
     assert(incorrectInts.map(Parser.integer.runParser).map(_.isEmpty).forall(_ == true))
