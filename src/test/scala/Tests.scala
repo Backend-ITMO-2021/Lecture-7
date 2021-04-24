@@ -67,6 +67,7 @@ class Tests extends AnyFunSuite {
     val functorLaws = functor.functorLaws
     assert(functorLaws.identity(testNonEmpty))
     assert(functorLaws.composite[Int, Option[Int], Int](testNonEmpty, x => if (x <= 2) None else Some(x), _.getOrElse(0)))
+    assertResult(NonEmpty(2,List(4,6,8,10)))(functor.map(testNonEmpty)(_ * 2))
 
     val testFuncNonEmpty = NonEmpty[Int => Int](_ + 1, List(_ + 2, _ + 3))
     val testFuncNonEmpty2 = NonEmpty[Int => Int](_ * 1, List(_ * 2, _ * 3))
@@ -75,11 +76,18 @@ class Tests extends AnyFunSuite {
     assert(applicativeLaws.composition(testFuncNonEmpty, testFuncNonEmpty2, testNonEmpty))
     assert(applicativeLaws.homomorphism[Int, Int](_ * 5, 5))
     assert(applicativeLaws.interchange(testFuncNonEmpty, 5))
+    val applTest = NonEmpty(1, List(2))
+    val applFunctionTest = NonEmpty[Int => Int](_ + 1, List(_ * 2))
+    assertResult(NonEmpty(2, List(3, 2, 4)))(applicative.ap(applTest)(applFunctionTest))
 
     val monadLaws = monad.monadLaws
     assert(monadLaws.leftIdentity[Int, Int](15, x => NonEmpty(x, List(x, x, x))))
     assert(monadLaws.rightIdentity(testNonEmpty))
     assert(monadLaws.associativity[Int, Int, Int](testNonEmpty, x => NonEmpty(x, List(x, x, x)), y => NonEmpty(y * 2, Nil)))
+    val monadTest = NonEmpty(1, List(2,3))
+    assertResult(NonEmpty(1, List(2,2,3,3,3)))(monad.flatMap(monadTest)(x => List.fill(x)(x) match {
+      case head :: rest => NonEmpty(head, rest)
+    }))
   }
 
   test("Parser") {
@@ -119,10 +127,10 @@ class Tests extends AnyFunSuite {
       ).runParser("123")
     )
 
-    val correctBrackets = "(()(((()()))(()))(()))"
-    val incorrectBrackets = "(()()(())(()))())"
-    assert(brackets.runParser(correctBrackets).nonEmpty)
-    assert(brackets.runParser(incorrectBrackets).isEmpty)
+    val correctAb = "ababababababababababab"
+    val incorrectAB = "ababababbababababab"
+    assert(ab.runParser(correctAb).nonEmpty)
+    assert(ab.runParser(incorrectAB).isEmpty)
 
     val integer = "12314"
     assertResult(Some(12314, ""))(Parser.integer.runParser(integer))
@@ -132,5 +140,15 @@ class Tests extends AnyFunSuite {
     assertResult(Some(123114, ""))(Parser.integer.runParser(integer2))
     val incorrectInts = List("a123", "+-12", "--123", "123a", "12a33", "9999_1")
     assert(incorrectInts.map(Parser.integer.runParser).map(_.isEmpty).forall(_ == true))
+  }
+
+  test("Parser bonus") {
+    import Parser._
+    val correctBrackets = "(((()))((())()))"
+    val incorrectBrackets = "(((()))((())()))("
+    val incorrectBrackets2 = "(((()))((()))()))"
+    assert(brackets.runParser(correctBrackets).nonEmpty)
+    assert(brackets.runParser(incorrectBrackets).isEmpty)
+    assert(brackets.runParser(incorrectBrackets2).isEmpty)
   }
 }

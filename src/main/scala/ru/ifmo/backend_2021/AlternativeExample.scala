@@ -3,7 +3,7 @@ package ru.ifmo.backend_2021
 object AlternativeExample {
   lazy val optionAlternative = new Alternative[Option] {
     def empty[A]: Option[A] = None
-    def orElse[A](fa: Option[A], recover: Option[A]): Option[A] =
+    def orElse[A](fa: Option[A], recover: => Option[A]): Option[A] =
       fa match {
         case _: Some[_] => fa
         case None => recover

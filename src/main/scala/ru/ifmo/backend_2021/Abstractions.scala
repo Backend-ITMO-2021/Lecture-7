@@ -87,7 +87,7 @@ trait Applicative[F[_]] extends Functor[F] {
 
 trait Alternative[F[_]] extends Applicative[F] {
   def empty[A]: F[A]
-  def orElse[A](fa: F[A], recover: F[A]): F[A]
+  def orElse[A](fa: F[A], recover: => F[A]): F[A]
 
   trait AlternativeLaws {
     def identity[A](fa: F[A]): Boolean =

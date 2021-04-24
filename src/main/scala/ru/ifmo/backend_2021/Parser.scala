@@ -10,10 +10,11 @@ object Parser {
 
   lazy val ok: Parser[Unit] = ???
   lazy val eof: Parser[Unit] = ???
-  lazy val satisfy: (Char => Boolean) => Parser[Char] = ???
+  def satisfy(predicate: Char => Boolean): Parser[Char] = ???
   lazy val element: Char => Parser[Char] = ???
   lazy val stream: String => Parser[String] = ???
 
-  lazy val brackets: Parser[Unit] = ???
+  lazy val ab: Parser[Unit] = ???
   lazy val integer: Parser[Int] = ???
+  lazy val brackets: Parser[Unit] = ???
 }
