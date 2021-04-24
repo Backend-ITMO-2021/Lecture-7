@@ -1,12 +1,14 @@
 package ru.ifmo.backend_2021
 
 sealed trait Tree[A]
+case class Leaf[A]() extends Tree[A]
+case class Node[A](list: NonEmpty[A], left: Tree[A], right: Tree[A])
 
 object Tree {
   def isEmpty: Tree[Int] => Boolean = ???
-  def contains: Int => Tree[Int] => Boolean = ???
-  def insert: Int => Tree[Int] => Tree[Int] = ???
-  def delete: Int => Tree[Int] => Tree[Int] = ???
+  def contains(value: Int): Tree[Int] => Boolean = ???
+  def insert(value: Int): Tree[Int] => Tree[Int] = ???
+  def delete(value: Int): Tree[Int] => Tree[Int] = ???
   def fromList: List[Int] => Tree[Int] = ???
 
   val foldable = new Foldable[Tree] {
