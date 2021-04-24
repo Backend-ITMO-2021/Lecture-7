@@ -1,7 +1,7 @@
 package ru.ifmo.backend_2021
 
 object AlternativeExample {
-  val optionAlternative = new Alternative[Option] {
+  lazy val optionAlternative = new Alternative[Option] {
     def empty[A]: Option[A] = None
     def orElse[A](fa: Option[A], recover: Option[A]): Option[A] =
       fa match {

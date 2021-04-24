@@ -3,7 +3,7 @@ package ru.ifmo.backend_2021
 case class NonEmpty[A](head: A, list: List[A])
 
 object NonEmpty {
-  val foldable: Foldable[NonEmpty] = new Foldable[NonEmpty] {
+  lazy val foldable: Foldable[NonEmpty] = new Foldable[NonEmpty] {
     def fold[A](fa: NonEmpty[A])(implicit F: Monoid[A]): A =
       foldMap(fa)(identity)
     def foldMap[A, B](fa: NonEmpty[A])(f: A => B)(implicit F: Monoid[B]): B =
@@ -12,7 +12,7 @@ object NonEmpty {
       f(fa.head)(fa.list.foldRight(z)((a, b) => f(a)(b)))
   }
 
-  val functor: Functor[NonEmpty] = ???
-  val applicative: Applicative[NonEmpty] = ???
-  val monad: Monad[NonEmpty] = ???
+  lazy val functor: Functor[NonEmpty] = ???
+  lazy val applicative: Applicative[NonEmpty] = ???
+  lazy val monad: Monad[NonEmpty] = ???
 }
