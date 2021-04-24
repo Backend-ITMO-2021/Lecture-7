@@ -5,9 +5,9 @@ trait Eq[M] {
 }
 
 trait Num[M] {
-  def +(a: M, b: M): Boolean
-  def *(a: M, b: M): Boolean
-  def -(a: M, b: M): Boolean
+  def +(a: M, b: M): M
+  def *(a: M, b: M): M
+  def -(a: M, b: M): M
 }
 
 trait Semigroup[M] {
@@ -17,6 +17,8 @@ trait Semigroup[M] {
     def associative(f1: M, f2: M, f3: M): Boolean =
       op(f1, op(f2, f3)) == op(op(f1, f2), f3)
   }
+
+  lazy val semigroupLaws: SemigroupLaws = new SemigroupLaws {}
 }
 
 trait Monoid[M] extends Semigroup[M] {
@@ -27,6 +29,8 @@ trait Monoid[M] extends Semigroup[M] {
     def leftIdentity(a: M): Boolean = a == op(zero, a)
     def rightIdentity(a: M): Boolean = a == op(a, zero)
   }
+
+  lazy val monoidLaws: MonoidLaws = new MonoidLaws {}
 }
 
 trait Foldable[F[_]] {
@@ -41,8 +45,11 @@ trait Foldable[F[_]] {
       foldMap(fa)(Vector(_))(new Monoid[Vector[A]] {
         def zero: Vector[A] = Vector.empty
         def op(a: Vector[A], b: Vector[A]): Vector[A] = a ++ b
-      }) == foldr(fa, Vector.empty[A])(a => b => a +: b)
+      }
+      ) == foldr(fa, Vector.empty[A])(a => b => a +: b)
   }
+
+  lazy val foldableLaw: FoldableLaw = new FoldableLaw {}
 }
 
 trait Functor[F[_]] {
@@ -53,6 +60,8 @@ trait Functor[F[_]] {
     def composite[A, B, C](fa: F[A], f1: A => B, f2: B => C): Boolean =
       map(map(fa)(f1))(f2) == map(fa)(f1 andThen f2)
   }
+
+  lazy val functorLaws: FunctorLaws = new FunctorLaws {}
 }
 
 trait Applicative[F[_]] extends Functor[F] {
@@ -72,6 +81,22 @@ trait Applicative[F[_]] extends Functor[F] {
     def interchange[A, B](f: F[A => B], a: A): Boolean =
       ap(point(a))(f) == ap(f)(point((f: A => B) => f(a)))
   }
+
+  lazy val applicativeLaws: ApplicativeLaws = new ApplicativeLaws {}
+}
+
+trait Alternative[F[_]] extends Applicative[F] {
+  def empty[A]: F[A]
+  def orElse[A](fa: F[A], recover: F[A]): F[A]
+
+  trait AlternativeLaws {
+    def identity[A](fa: F[A]): Boolean =
+      orElse(empty, fa) == fa
+    def associativity[A](a: F[A], b: F[A], c: F[A]): Boolean =
+      orElse(orElse(a, b), c) == orElse(a, orElse(b, c))
+  }
+
+  lazy val alternativeLaws: AlternativeLaws = new AlternativeLaws {}
 }
 
 trait Monad[F[_]] extends Applicative[F] {
@@ -87,4 +112,6 @@ trait Monad[F[_]] extends Applicative[F] {
     def associativity[A, B, C](a: F[A], f: A => F[B], g: B => F[C]): Boolean =
       flatMap(flatMap(a)(f))(g) == flatMap(a)(x => flatMap(f(x))(g))
   }
+
+  lazy val monadLaws: MonadLaws = new MonadLaws {}
 }

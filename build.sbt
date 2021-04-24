@@ -1,4 +1,4 @@
-name := "Template"
+name := "Lecture-7"
 
 version := "0.1"
 
