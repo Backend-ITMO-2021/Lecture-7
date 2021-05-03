@@ -27,19 +27,11 @@ object Tree {
         case node: Node[Int] =>
           if (node.list.head == value)
             Node(node.list.copy(list = node.list.list :+ value), node.left, node.right)
-          else node.right match {
-            case rightNode: Node[Int] =>
-              if (rightNode.list.head > value) Node(node.list, insert(value)(node.left), node.right)
-              else Node(node.list, node.left, insert(value)(node.right))
-            case _ =>
-              node.left match {
-                case leftNode: Node[Int] =>
-                  if (leftNode.list.head < value) Node(node.list, node.left, insert(value)(node.right))
-                  else Node(node.list, insert(value)(node.left), node.right)
-                case _ =>
-                  if (value < node.list.head) Node(node.list, insert(value)(node.left), node.right)
-                  else Node(node.list, node.left, insert(value)(node.right))
-              }
+          else if (node.list.head < value) {
+            Node(list = node.list, node.left, insert(value)(node.right))
+          }
+          else {
+            Node(list = node.list, insert(value)(node.left), node.right)
           }
         case _ =>
           Node(NonEmpty(value, List(value)), Leaf[Int](), Leaf[Int]())
@@ -121,10 +113,20 @@ object Tree {
   }
 
   lazy val foldable = new Foldable[Tree] {
-    def fold[A](fa: Tree[A])(implicit F: Monoid[A]): A = ???
+    def fold[A](fa: Tree[A])(implicit F: Monoid[A]): A = fa match {
+      case Leaf() => F.zero
+      case Node(list, _, _) => list.head
+    }
 
-    def foldMap[A, B](fa: Tree[A])(f: A => B)(implicit F: Monoid[B]): B = ???
+    def foldMap[A, B](fa: Tree[A])(f: A => B)(implicit F: Monoid[B]): B = fa match {
+      case Leaf() => F.zero
+      case Node(list, left, right) => F.op(foldMap(left)(f), F.op(f(list.head),(foldMap(right)(f))))
+    }
 
-    def foldr[A, B](fa: Tree[A], z: B)(f: A => B => B): B = ???
+    def foldr[A, B](fa: Tree[A], z: B)(f: A => B => B): B = fa match {
+      case Leaf() => z
+      case Node(list, left, right) =>
+        foldr(left, f(list.head)(foldr(right, z)(f)))(f)
+    }
   }
 }
