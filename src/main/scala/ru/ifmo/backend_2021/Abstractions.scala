@@ -41,12 +41,17 @@ trait Foldable[F[_]] {
   def toList[A](fa: F[A]): List[A] = foldr(fa, List.empty[A])(a => list => a :: list)
 
   trait FoldableLaw {
-    def rightConsistent[A](fa: F[A]): Boolean =
-      foldMap(fa)(Vector(_))(new Monoid[Vector[A]] {
+    def rightConsistent[A](fa: F[A]): Boolean = {
+      val a = foldMap(fa)(Vector(_))(new Monoid[Vector[A]] {
         def zero: Vector[A] = Vector.empty
         def op(a: Vector[A], b: Vector[A]): Vector[A] = a ++ b
       }
-      ) == foldr(fa, Vector.empty[A])(a => b => a +: b)
+      )
+
+      val b = foldr(fa, Vector.empty[A])(a => b => a +: b)
+
+      a == b
+    }
   }
 
   lazy val foldableLaw: FoldableLaw = new FoldableLaw {}
