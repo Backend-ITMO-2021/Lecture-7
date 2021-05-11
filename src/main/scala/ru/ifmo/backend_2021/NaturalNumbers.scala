@@ -30,6 +30,6 @@ object Nat {
   lazy val natEq: Eq[Nat] = (a: Nat, b: Nat) => (a, b) match {
     case (Z, Z) => true
     case (Z, _: Succ) | (_: Succ, Z) => false
-    case (a: Succ, b: Succ) => eq(a.s, b.s)
+    case (a: Succ, b: Succ) => natEq.eq(a.s, b.s)
   }
 }
