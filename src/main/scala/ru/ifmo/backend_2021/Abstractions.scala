@@ -69,7 +69,7 @@ trait Applicative[F[_]] extends Functor[F] {
   def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   trait ApplicativeLaws {
-    def identity[A](fa: F[A]): Boolean =
+    def identity[A](fa: F[A]): Boolean = 
       fa == ap(fa)(point((a: A) => a))
 
     def composition[A, B, C](fbc: F[B => C], fab: F[A => B], fa: F[A]): Boolean =
@@ -78,7 +78,7 @@ trait Applicative[F[_]] extends Functor[F] {
     def homomorphism[A, B](ab: A => B, a: A): Boolean =
       ap(point(a))(point(ab)) == point(ab(a))
 
-    def interchange[A, B](f: F[A => B], a: A): Boolean =
+    def interchange[A, B](f: F[A => B], a: A): Boolean = 
       ap(point(a))(f) == ap(f)(point((f: A => B) => f(a)))
   }
 
@@ -108,7 +108,8 @@ trait Monad[F[_]] extends Applicative[F] {
 
   trait MonadLaws {
     def leftIdentity[A, B](a: A, f: A => F[B]): Boolean = flatMap(point(a))(f) == f(a)
-    def rightIdentity[A](a: F[A]): Boolean = flatMap(a)(point(_: A)) == a
+    def rightIdentity[A](a: F[A]): Boolean = 
+      flatMap(a)(point(_: A)) == a
     def associativity[A, B, C](a: F[A], f: A => F[B], g: B => F[C]): Boolean =
       flatMap(flatMap(a)(f))(g) == flatMap(a)(x => flatMap(f(x))(g))
   }
