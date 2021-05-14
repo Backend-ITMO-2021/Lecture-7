@@ -6,7 +6,9 @@ trait Eq[M] {
 
 trait Num[M] {
   def +(a: M, b: M): M
+
   def *(a: M, b: M): M
+
   def -(a: M, b: M): M
 }
 
@@ -23,10 +25,12 @@ trait Semigroup[M] {
 
 trait Monoid[M] extends Semigroup[M] {
   def zero: M
+
   def op(a: M, b: M): M
 
   trait MonoidLaws {
     def leftIdentity(a: M): Boolean = a == op(zero, a)
+
     def rightIdentity(a: M): Boolean = a == op(a, zero)
   }
 
@@ -35,7 +39,9 @@ trait Monoid[M] extends Semigroup[M] {
 
 trait Foldable[F[_]] {
   def fold[A](fa: F[A])(implicit F: Monoid[A]): A
+
   def foldMap[A, B](fa: F[A])(f: A => B)(implicit F: Monoid[B]): B
+
   def foldr[A, B](fa: F[A], z: B)(f: A => B => B): B
 
   def toList[A](fa: F[A]): List[A] = foldr(fa, List.empty[A])(a => list => a :: list)
@@ -44,6 +50,7 @@ trait Foldable[F[_]] {
     def rightConsistent[A](fa: F[A]): Boolean =
       foldMap(fa)(Vector(_))(new Monoid[Vector[A]] {
         def zero: Vector[A] = Vector.empty
+
         def op(a: Vector[A], b: Vector[A]): Vector[A] = a ++ b
       }
       ) == foldr(fa, Vector.empty[A])(a => b => a +: b)
@@ -57,6 +64,7 @@ trait Functor[F[_]] {
 
   trait FunctorLaws {
     def identity[A](fa: F[A]): Boolean = map(fa)(x => x) == fa
+
     def composite[A, B, C](fa: F[A], f1: A => B, f2: B => C): Boolean =
       map(map(fa)(f1))(f2) == map(fa)(f1 andThen f2)
   }
@@ -66,6 +74,7 @@ trait Functor[F[_]] {
 
 trait Applicative[F[_]] extends Functor[F] {
   def point[A](a: A): F[A]
+
   def ap[A, B](fa: F[A])(f: F[A => B]): F[B]
 
   trait ApplicativeLaws {
@@ -87,11 +96,13 @@ trait Applicative[F[_]] extends Functor[F] {
 
 trait Alternative[F[_]] extends Applicative[F] {
   def empty[A]: F[A]
+
   def orElse[A](fa: F[A], recover: => F[A]): F[A]
 
   trait AlternativeLaws {
     def identity[A](fa: F[A]): Boolean =
       orElse(empty, fa) == fa
+
     def associativity[A](a: F[A], b: F[A], c: F[A]): Boolean =
       orElse(orElse(a, b), c) == orElse(a, orElse(b, c))
   }
@@ -101,14 +112,18 @@ trait Alternative[F[_]] extends Applicative[F] {
 
 trait Monad[F[_]] extends Applicative[F] {
   def point[A](a: A): F[A]
+
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
   def map[A, B](fa: F[A])(f: A => B): F[B] = flatMap(fa)(a => point(f(a)))
+
   def ap[A, B](fa: F[A])(f: F[A => B]): F[B] = flatMap(f)(x => map(fa)(x))
 
   trait MonadLaws {
     def leftIdentity[A, B](a: A, f: A => F[B]): Boolean = flatMap(point(a))(f) == f(a)
+
     def rightIdentity[A](a: F[A]): Boolean = flatMap(a)(point(_: A)) == a
+
     def associativity[A, B, C](a: F[A], f: A => F[B], g: B => F[C]): Boolean =
       flatMap(flatMap(a)(f))(g) == flatMap(a)(x => flatMap(f(x))(g))
   }
