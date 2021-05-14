@@ -82,5 +82,20 @@ object Parser {
     functor.map(monad.flatMap(opt("+-"))(res => functor.map(unsignedNumber)(res ++ _)))(_.toInt)
   }
 
-  lazy val brackets: Parser[Unit] = ???
+  lazy val mapBracketToNumber: Parser[Int] = {
+    functor.map(satisfy("()".contains(_)))((x: Char) => if (x == '(') 1 else -1)
+  }
+
+  lazy val balanceCounter: Parser[Int] = {
+    alternative.orElse(
+      functor.map(eof)(_ => 0),
+      monad.flatMap(mapBracketToNumber)((res: Int) => {
+        monad.flatMap(balanceCounter)((x: Int) => if (res + x > 0) alternative.empty else functor.map(ok)(_ => res + x))
+      })
+    )
+  }
+
+  lazy val brackets: Parser[Unit] = {
+    monad.flatMap(balanceCounter)(ans => if (ans == 0) ok else alternative.empty)
+  }
 }
