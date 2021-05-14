@@ -26,8 +26,8 @@ object Tree {
     case node@Node(NonEmpty(head, _), _, right) if value > head => node.copy(right = insert(value)(right))
   }
 
-  def findMin: Tree[Int] => NonEmpty[Int] = {
-    case Node(ne, Leaf(), _) => ne
+  def findMin: Tree[Int] => (NonEmpty[Int], Node[Int]) = {
+    case node@Node(ne, Leaf(), _) => (ne, node.copy(list = ne.copy(list = List.empty)))
     case Node(_, left, _) => findMin(left)
   }
 
@@ -38,13 +38,14 @@ object Tree {
 
     case node@Node(NonEmpty(head, _), _, right) if value > head => node.copy(right = delete(value)(right))
 
+    // нашли элемент
     case Node(NonEmpty(head, Nil), Leaf(), right) if value == head => right
 
     case Node(NonEmpty(head, Nil), left, Leaf()) if value == head => left
 
     case node@Node(NonEmpty(head, Nil), left, right) if value == head =>
-      val newNonEmpty = findMin(right)
-      node.copy(list = newNonEmpty.copy(), left, delete(newNonEmpty.head)(right))
+      val (newNonEmpty, newRightNode) = findMin(right)
+      node.copy(list = newNonEmpty.copy(), left, delete(newNonEmpty.head)(newRightNode))
 
     case node@Node(NonEmpty(head, _ +: seq), _, _) if value == head => node.copy(list = NonEmpty(head, seq))
   }

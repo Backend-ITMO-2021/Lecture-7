@@ -8,18 +8,20 @@ object Parser {
       Parser(fa.runParser.andThen(_.map { case (ans, tail) => (f(ans), tail) }))
     }
   }
+
   lazy val applicative: Applicative[Parser] = new Applicative[Parser] {
     override def point[A](a: A): Parser[A] = Parser(string => Some(a, string))
 
     override def ap[A, B](fa: Parser[A])(f: Parser[A => B]): Parser[B] = {
       Parser(string =>
-        fa.runParser(string).flatMap(res => f.runParser(res._2).map(resF => (resF._1(res._1), resF._2)))
+        f.runParser(string).flatMap(resF => fa.runParser(resF._2).map(res => (resF._1(res._1), res._2))) // тут был не тот порядок
       )
     }
 
     override def map[A, B](fa: Parser[A])(f: A => B): Parser[B] = functor.map(fa)(f)
   }
   lazy val alternative: Alternative[Parser] = new Alternative[Parser] {
+
     override def empty[A]: Parser[A] = Parser(_ => None)
 
     override def orElse[A](fa: Parser[A], recover: => Parser[A]): Parser[A] = {
@@ -35,6 +37,7 @@ object Parser {
   lazy val monad: Monad[Parser] = new Monad[Parser] {
     override def point[A](a: A): Parser[A] = applicative.point(a)
 
+
     override def flatMap[A, B](fa: Parser[A])(f: A => Parser[B]): Parser[B] = {
       Parser(string => fa.runParser(string).flatMap(res => f(res._1).runParser(res._2)))
     }
@@ -42,6 +45,7 @@ object Parser {
 
   lazy val ok: Parser[Unit] = applicative.point()
   lazy val eof: Parser[Unit] = Parser(string => if (string == "") Some((), "") else None)
+
 
   def satisfy(predicate: Char => Boolean): Parser[Char] = Parser {
     case string if predicate(string.charAt(0)) => Some(string.charAt(0), string.drop(1))
@@ -59,16 +63,19 @@ object Parser {
 
   lazy val ab: Parser[Unit] = alternative.orElse(monad.flatMap(stream("ab"))(_ => ab), eof)
 
+
   lazy val opt: String => Parser[String] = { string =>
     alternative.orElse(functor.map(satisfy(string.contains(_)))(_.toString), Parser(str => Some("", str)))
   }
 
+
   lazy val digit: Parser[String] = functor.map(satisfy("1234567890".contains(_)))(_.toString)
+
 
   lazy val unsignedNumber: Parser[String] = {
     alternative.orElse(
       functor.map(eof)(_ => ""), monad.flatMap(digit)((res: String) => functor.map(unsignedNumber)(res ++ _))
-    )
+    )ы
   }
 
   lazy val integer: Parser[Int] = {
