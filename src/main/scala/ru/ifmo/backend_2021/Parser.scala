@@ -75,7 +75,7 @@ object Parser {
   lazy val unsignedNumber: Parser[String] = {
     alternative.orElse(
       functor.map(eof)(_ => ""), monad.flatMap(digit)((res: String) => functor.map(unsignedNumber)(res ++ _))
-    )ы
+    )
   }
 
   lazy val integer: Parser[Int] = {
