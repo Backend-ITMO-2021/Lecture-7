@@ -14,7 +14,7 @@ object Parser {
 
     override def ap[A, B](fa: Parser[A])(f: Parser[A => B]): Parser[B] = {
       Parser(string =>
-        f.runParser(string).flatMap(resF => fa.runParser(resF._2).map(res => (resF._1(res._1), res._2))) // тут был не тот порядок
+        f.runParser(string).flatMap(resF => fa.runParser(resF._2).map(res => (resF._1(res._1), res._2)))
       )
     }
 
