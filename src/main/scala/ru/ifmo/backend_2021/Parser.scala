@@ -84,7 +84,13 @@ object Parser {
         functor.map(element('('))(_ => -1),
         functor.map(element(')'))(_ => 1)
       ))
-      { counter => functor.map(bracketsCalc)(counter + _) },
+      { counter => {
+        monad.flatMap(bracketsCalc)(sum => {
+          val s = counter + sum
+          if (s < 0) alternative.empty[Int] else applicative.point[Int](s)
+        })
+
+      } },
     functor.map(eof)(_ => 0)
   )
   
