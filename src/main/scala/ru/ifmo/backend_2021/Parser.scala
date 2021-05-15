@@ -45,13 +45,13 @@ object Parser {
   lazy val stream: String => Parser[String] = str => Parser(x =>
   if (x.startsWith(str)) Some((str, x.substring(str.length))) else None)
 
-  lazy val finder: Regex => Parser[String] = pattern => Parser(x =>
-  pattern.findFirstMatchIn(x) match {
-    case Some(x) => Some((x.toString(), ""))
-    case None => None
-  } )
-
   lazy val ab: Parser[Unit] = alternative.orElse(eof, monad.flatMap(stream("ab"))(_ => ab))
+
+  lazy val finder: Regex => Parser[String] = pattern => Parser(x =>
+    pattern.findFirstMatchIn(x) match {
+      case Some(x) => Some((x.toString(), ""))
+      case None => None
+    } )
 
   lazy val integer: Parser[Int] = alternative.orElse(
     monad.flatMap(finder(new Regex("^(\\-|\\+)?\\d*$")))(
@@ -59,5 +59,16 @@ object Parser {
     alternative.empty)
 
 
-  lazy val brackets: Parser[Unit] = ???
+  lazy val checker: Parser[Int] = alternative.orElse(
+    functor.map(eof)(_ => 0),
+    monad.flatMap(
+      alternative.orElse(
+        functor.map(element('('))(_ => -1),
+        functor.map(element(')'))(_ => 1)
+      ))
+    { c => functor.map(checker)(c + _) }
+  )
+
+  lazy val brackets: Parser[Unit] = monad.flatMap(checker) { x =>
+    if (x == 0) ok else alternative.empty[Unit]}
 }
