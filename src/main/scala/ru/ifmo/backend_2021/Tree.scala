@@ -48,14 +48,14 @@ object Tree {
 
   def fromList(list: List[Int]): Tree[Int] = list.foldLeft(Leaf(): Tree[Int])((tree: Tree[Int], value: Int) => insert(value)(tree))
 
-  lazy val foldable = new Foldable[Tree] {
+  lazy val foldable: Foldable[Tree] = new Foldable[Tree] {
     def fold[A](fa: Tree[A])(implicit F: Monoid[A]): A = fa match {
       case Leaf() => F.zero
-      case Node(list,left,right) => list.head
+      case Node(list,left,right) => F.op(fold(left), F.op(NonEmpty.foldable.fold(list),fold(right)))
     }
     def foldMap[A, B](fa: Tree[A])(f: A => B)(implicit F: Monoid[B]): B = fa match {
       case Leaf() => F.zero
-      case Node(list,left,right) => F.op(foldMap(left)(f), F.op(f(list.head),(foldMap(right)(f))))
+      case Node(list,left,right) => F.op(foldMap(left)(f), F.op(NonEmpty.foldable.foldMap(list)(f),foldMap(right)(f)))
     }
     def foldr[A, B](fa: Tree[A], z: B)(f: A => B => B): B = fa match {
       case Leaf() => z

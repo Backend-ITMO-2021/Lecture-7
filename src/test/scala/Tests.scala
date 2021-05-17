@@ -147,8 +147,10 @@ class Tests extends AnyFunSuite {
     val correctBrackets = "(((()))((())()))"
     val incorrectBrackets = "(((()))((())()))("
     val incorrectBrackets2 = "(((()))((()))()))"
+    val incorrectBrackets3 = "())("
     assert(brackets.runParser(correctBrackets).nonEmpty)
     assert(brackets.runParser(incorrectBrackets).isEmpty)
     assert(brackets.runParser(incorrectBrackets2).isEmpty)
+    assert(brackets.runParser(incorrectBrackets3).isEmpty)
   }
 }

@@ -66,7 +66,7 @@ object Parser {
         functor.map(element('('))(_ => -1),
         functor.map(element(')'))(_ => 1)
       ))
-    { c => functor.map(checker)(c + _) }
+    { c => monad.flatMap(checker)(x  => if (c + x < 0) alternative.empty else functor.map(ok)(_ => c + x))}
   )
 
   lazy val brackets: Parser[Unit] = monad.flatMap(checker) { x =>
