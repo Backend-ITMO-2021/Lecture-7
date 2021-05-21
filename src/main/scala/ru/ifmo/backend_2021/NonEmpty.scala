@@ -23,7 +23,7 @@ object NonEmpty {
 
     override def ap[A, B](fa: NonEmpty[A])(f: NonEmpty[A => B]): NonEmpty[B] = {
       val list = for {fs <- f.head :: f.list; fas <- fa.head :: fa.list} yield fs(fas)
-      NonEmpty(list.head, list.slice(1, list.length))
+      NonEmpty(list.head, list.tail)
     }
 
     override def map[A, B](fa: NonEmpty[A])(f: A => B): NonEmpty[B] = functor.map(fa)(f)

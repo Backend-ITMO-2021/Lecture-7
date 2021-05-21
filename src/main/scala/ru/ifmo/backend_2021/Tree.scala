@@ -34,7 +34,7 @@ object Tree {
             Node(list = node.list, insert(value)(node.left), node.right)
           }
         case _ =>
-          Node(NonEmpty(value, List(value)), Leaf[Int](), Leaf[Int]())
+          Node(NonEmpty(value, List()), Leaf[Int](), Leaf[Int]())
       }
     }
   }
@@ -45,7 +45,7 @@ object Tree {
         case Leaf() => tree
         case Node(list, left, right) =>
           if (list.head == value) {
-            if (list.list.length > 1) {
+            if (list.list.nonEmpty) {
               Node(list.copy(list = list.list.slice(0, list.list.length - 1)), left, right)
             } else {
               left match {
@@ -79,21 +79,20 @@ object Tree {
       } else {
         val sortedList = list.sorted
         val mid = (list.length - 1) / 2
+        val midCount = sortedList.count(_ == sortedList(mid))
+        val midEl = sortedList(mid)
         Node(
-          NonEmpty(sortedList(mid), List(sortedList(mid))),
-          fromList(sortedList.slice(0, mid)),
-          fromList(sortedList.slice(mid + 1, list.length)))
+          NonEmpty(sortedList(mid), List.fill(midCount - 1)(midEl)),
+          fromList(sortedList.slice(0, mid).filterNot(_ == midEl)),
+          fromList(sortedList.slice(mid + 1, list.length).filterNot(_ == midEl)))
       }
     }
   }
 
   @scala.annotation.tailrec
-  private def minNode(root: Node[Int]): Node[Int] = {
-    if (root.left.isInstanceOf[Leaf[Int]]) {
-      root
-    } else {
-      minNode(root.left.asInstanceOf[Node[Int]])
-    }
+  private def minNode(root: Node[Int]): Node[Int] = root.left match {
+    case _: Leaf[Int] => root
+    case _ => minNode(root.left.asInstanceOf[Node[Int]])
   }
 
   @scala.annotation.tailrec
@@ -115,18 +114,18 @@ object Tree {
   lazy val foldable = new Foldable[Tree] {
     def fold[A](fa: Tree[A])(implicit F: Monoid[A]): A = fa match {
       case Leaf() => F.zero
-      case Node(list, _, _) => list.head
+      case Node(list, left, right) => F.op(F.op(NonEmpty.foldable.fold(list)(F), fold(left)(F)), fold(right)(F))
     }
 
     def foldMap[A, B](fa: Tree[A])(f: A => B)(implicit F: Monoid[B]): B = fa match {
       case Leaf() => F.zero
-      case Node(list, left, right) => F.op(foldMap(left)(f), F.op(f(list.head),(foldMap(right)(f))))
+      case Node(list, left, right) => F.op(foldMap(left)(f), F.op(NonEmpty.foldable.foldMap(list)(f), foldMap(right)(f)))
     }
 
     def foldr[A, B](fa: Tree[A], z: B)(f: A => B => B): B = fa match {
       case Leaf() => z
       case Node(list, left, right) =>
-        foldr(left, f(list.head)(foldr(right, z)(f)))(f)
+        foldr(left, NonEmpty.foldable.foldr(list, foldr(right, z)(f))(f))(f)
     }
   }
 }

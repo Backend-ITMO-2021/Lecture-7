@@ -49,10 +49,7 @@ object Parser {
   })
 
   def satisfy(predicate: Char => Boolean): Parser[Char] = Parser({ str =>
-    str.find(predicate) match {
-      case Some(value) => Some((value, str.replaceFirst(value.toString, "")))
-      case None => None
-    }
+    if (predicate(str.head)) Some((str.head, str.tail)) else None
   })
 
   def fullySatisfy(pattern: String): Parser[String] = Parser({ str =>
@@ -61,7 +58,7 @@ object Parser {
 
   lazy val element: Char => Parser[Char] = { ch => satisfy(_ == ch) }
   lazy val stream: String => Parser[String] = { str =>
-    Parser({ s => if (s.contains(str)) Some((str, s.replace(str, ""))) else None })
+    Parser({ s => if (s.startsWith(str)) Some((str, s.replace(str, ""))) else None })
   }
 
   lazy val ab: Parser[Unit] = alternative.orElse(monad.flatMap(stream("ab"))(_ => ab), eof)
