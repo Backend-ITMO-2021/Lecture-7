@@ -54,7 +54,7 @@ object Tree {
   lazy val foldable = new Foldable[Tree] {
     def fold[A](fa: Tree[A])(implicit F: Monoid[A]): A = fa match {
       case Leaf() => F.zero
-      case Node(list, left, right) => list.head
+      case Node(list, left, right) => F.op(fold(left), F.op(NonEmpty.foldable.fold(list),fold(right)))
     }
 
     def foldMap[A, B](fa: Tree[A])(f: A => B)(implicit F: Monoid[B]): B = fa match {

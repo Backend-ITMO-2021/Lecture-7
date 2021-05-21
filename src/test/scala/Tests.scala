@@ -55,6 +55,14 @@ class Tests extends AnyFunSuite {
 
     val list = List(3, 1, 2, 4)
     assertResult(list.sorted)(foldable.toList(fromList(list)))
+
+    val sum = new Monoid[Int] {
+      def zero: Int = 0
+      def op(a: Int, b: Int): Int = a + b
+    }
+    val tree = fromList(List(1,1,2,2))
+    assert(foldable.fold(tree)(sum).equals(6))
+
   }
 
   test("NonEmpty") {
