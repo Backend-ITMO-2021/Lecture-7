@@ -58,7 +58,7 @@ object Parser {
 
   lazy val element: Char => Parser[Char] = { ch => satisfy(_ == ch) }
   lazy val stream: String => Parser[String] = { str =>
-    Parser({ s => if (s.startsWith(str)) Some((str, s.replace(str, ""))) else None })
+    Parser({ s => if (s.startsWith(str)) Some((str, s.replaceFirst(str, ""))) else None })
   }
 
   lazy val ab: Parser[Unit] = alternative.orElse(monad.flatMap(stream("ab"))(_ => ab), eof)
