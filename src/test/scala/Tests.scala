@@ -89,66 +89,66 @@ class Tests extends AnyFunSuite {
       case head :: rest => NonEmpty(head, rest)
     }))
   }
-
-  test("Parser") {
-    import Parser._
-    val empty = ""
-    val digits = "123"
-    val letters = "abc"
-    assertResult(Some((), empty))(ok.runParser(empty))
-    assertResult(Some((), digits))(ok.runParser(digits))
-
-    assertResult(Some(((), "")))(eof.runParser(empty))
-    assertResult(None)(eof.runParser(digits))
-
-    assertResult(Some(('1', "23")))(satisfy(_.isDigit).runParser(digits))
-    assertResult(None)(satisfy(_.isDigit).runParser(letters))
-
-    assertResult(Some('a', "bc"))(element('a').runParser(letters))
-    assertResult(None)(element('1').runParser(letters))
-
-    assertResult(Some("ab", "c"))(stream("ab").runParser(letters))
-    assertResult(None)(stream("ab").runParser(digits))
-
-
-  }
-
-  test("Parser combinators") {
-    import Parser._
-    assertResult(Some("123", ""))(
-      monad.flatMap(satisfy(_.isDigit))(one =>
-        monad.flatMap(satisfy(_.isDigit))(two =>
-          monad.flatMap(satisfy(_.isDigit))(three =>
-            monad.flatMap(eof)(_ =>
-              monad.point(one.toString + two.toString + three.toString)
-            )
-          )
-        )
-      ).runParser("123")
-    )
-
-    val correctAb = "ababababababababababab"
-    val incorrectAB = "ababababbababababab"
-    assert(ab.runParser(correctAb).nonEmpty)
-    assert(ab.runParser(incorrectAB).isEmpty)
-
-    val integer = "12314"
-    assertResult(Some(12314, ""))(Parser.integer.runParser(integer))
-    val integer1 = "-1214"
-    assertResult(Some(-1214, ""))(Parser.integer.runParser(integer1))
-    val integer2 = "+123114"
-    assertResult(Some(123114, ""))(Parser.integer.runParser(integer2))
-    val incorrectInts = List("a123", "+-12", "--123", "123a", "12a33", "9999_1")
-    assert(incorrectInts.map(Parser.integer.runParser).map(_.isEmpty).forall(_ == true))
-  }
-
-  test("Parser bonus") {
-    import Parser._
-    val correctBrackets = "(((()))((())()))"
-    val incorrectBrackets = "(((()))((())()))("
-    val incorrectBrackets2 = "(((()))((()))()))"
-    assert(brackets.runParser(correctBrackets).nonEmpty)
-    assert(brackets.runParser(incorrectBrackets).isEmpty)
-    assert(brackets.runParser(incorrectBrackets2).isEmpty)
-  }
+//
+//  test("Parser") {
+//    import Parser._
+//    val empty = ""
+//    val digits = "123"
+//    val letters = "abc"
+//    assertResult(Some((), empty))(ok.runParser(empty))
+//    assertResult(Some((), digits))(ok.runParser(digits))
+//
+//    assertResult(Some(((), "")))(eof.runParser(empty))
+//    assertResult(None)(eof.runParser(digits))
+//
+//    assertResult(Some(('1', "23")))(satisfy(_.isDigit).runParser(digits))
+//    assertResult(None)(satisfy(_.isDigit).runParser(letters))
+//
+//    assertResult(Some('a', "bc"))(element('a').runParser(letters))
+//    assertResult(None)(element('1').runParser(letters))
+//
+//    assertResult(Some("ab", "c"))(stream("ab").runParser(letters))
+//    assertResult(None)(stream("ab").runParser(digits))
+//
+//
+//  }
+//
+//  test("Parser combinators") {
+//    import Parser._
+//    assertResult(Some("123", ""))(
+//      monad.flatMap(satisfy(_.isDigit))(one =>
+//        monad.flatMap(satisfy(_.isDigit))(two =>
+//          monad.flatMap(satisfy(_.isDigit))(three =>
+//            monad.flatMap(eof)(_ =>
+//              monad.point(one.toString + two.toString + three.toString)
+//            )
+//          )
+//        )
+//      ).runParser("123")
+//    )
+//
+//    val correctAb = "ababababababababababab"
+//    val incorrectAB = "ababababbababababab"
+//    assert(ab.runParser(correctAb).nonEmpty)
+//    assert(ab.runParser(incorrectAB).isEmpty)
+//
+//    val integer = "12314"
+//    assertResult(Some(12314, ""))(Parser.integer.runParser(integer))
+//    val integer1 = "-1214"
+//    assertResult(Some(-1214, ""))(Parser.integer.runParser(integer1))
+//    val integer2 = "+123114"
+//    assertResult(Some(123114, ""))(Parser.integer.runParser(integer2))
+//    val incorrectInts = List("a123", "+-12", "--123", "123a", "12a33", "9999_1")
+//    assert(incorrectInts.map(Parser.integer.runParser).map(_.isEmpty).forall(_ == true))
+//  }
+//
+//  test("Parser bonus") {
+//    import Parser._
+//    val correctBrackets = "(((()))((())()))"
+//    val incorrectBrackets = "(((()))((())()))("
+//    val incorrectBrackets2 = "(((()))((()))()))"
+//    assert(brackets.runParser(correctBrackets).nonEmpty)
+//    assert(brackets.runParser(incorrectBrackets).isEmpty)
+//    assert(brackets.runParser(incorrectBrackets2).isEmpty)
+//  }
 }

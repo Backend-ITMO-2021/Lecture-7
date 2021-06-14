@@ -12,7 +12,27 @@ object NonEmpty {
       f(fa.head)(fa.list.foldRight(z)((a, b) => f(a)(b)))
   }
 
-  lazy val functor: Functor[NonEmpty] = ???
-  lazy val applicative: Applicative[NonEmpty] = ???
-  lazy val monad: Monad[NonEmpty] = ???
+  lazy val functor: Functor[NonEmpty] = new Functor[NonEmpty] {
+    def map[A, B](fa: NonEmpty[A])(f: A => B): NonEmpty[B] = NonEmpty(f(fa.head), fa.list.map(f))
+  }
+
+  lazy val applicative: Applicative[NonEmpty] = new Applicative[NonEmpty] {
+    def point[A](a: A): NonEmpty[A] = NonEmpty(a, List.empty)
+
+    def ap[A, B](fa: NonEmpty[A])(f: NonEmpty[A => B]): NonEmpty[B] = {
+      val result = for (fs <- f.head :: f.list; fas <- fa.head :: fa.list) yield fs(fas)
+      NonEmpty(result.head, result.tail)
+    }
+
+    def map[A, B](fa: NonEmpty[A])(f: A => B): NonEmpty[B] = NonEmpty.functor.map(fa)(f)
+  }
+
+  lazy val monad: Monad[NonEmpty] = new Monad[NonEmpty] {
+    def point[A](a: A): NonEmpty[A] = NonEmpty.applicative.point(a)
+
+    def flatMap[A, B](fa: NonEmpty[A])(f: A => NonEmpty[B]): NonEmpty[B] = {
+      val list = for {a <- fa.head :: fa.list; b <- f(a).head :: f(a).list} yield b
+      NonEmpty(list.head, list.tail)
+    }
+  }
 }
